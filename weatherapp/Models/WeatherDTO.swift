@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - DTO (Data Transfer Object) — mirrors the JSON from Current Weather API 2.5
-
 struct WeatherResponseDTO: Decodable {
     let coord: CoordDTO
     let weather: [WeatherConditionDTO]
@@ -63,8 +61,6 @@ struct SysDTO: Decodable {
     let sunrise: TimeInterval?
     let sunset: TimeInterval?
 }
-
-// MARK: - Domain model — what the UI actually uses
 
 struct Weather {
     let temperature: Double

@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - Errors with user-facing messages
-
 enum WeatherError: LocalizedError {
     case invalidURL
     case networkError(Error)
@@ -34,13 +32,9 @@ enum WeatherError: LocalizedError {
     }
 }
 
-// MARK: - Protocol (for DI and testing)
-
 protocol WeatherServiceProtocol {
     func fetchWeather(for city: String) async throws -> Weather
 }
-
-// MARK: - Implementation
 
 final class WeatherServiceImpl: WeatherServiceProtocol {
     private let apiKey: String
@@ -59,8 +53,6 @@ final class WeatherServiceImpl: WeatherServiceProtocol {
         let dto = try decodeResponse(data: data)
         return Weather(from: dto)
     }
-
-    // MARK: - Private helpers
 
     private func buildURL(for city: String) throws -> URL {
         var components = URLComponents()

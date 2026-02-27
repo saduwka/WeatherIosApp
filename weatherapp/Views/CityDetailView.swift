@@ -25,8 +25,6 @@ struct CityDetailView: View {
         }
     }
 
-    // MARK: - Weather content
-
     private func weatherContent(_ weather: Weather) -> some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -66,8 +64,6 @@ struct CityDetailView: View {
         }
     }
 
-    // MARK: - Error view with retry
-
     private func errorView(message: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
@@ -85,8 +81,6 @@ struct CityDetailView: View {
             .buttonStyle(.borderedProminent)
         }
     }
-
-    // MARK: - Reusable components
 
     private func weatherStat(icon: String, value: String) -> some View {
         Label(value, systemImage: icon)
