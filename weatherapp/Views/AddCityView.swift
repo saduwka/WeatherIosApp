@@ -4,14 +4,24 @@ import Combine
 struct AddCityView: View {
     @ObservedObject var viewModel: WeatherViewModel
     @State private var cityName = ""
-    
+
     var body: some View {
         NavigationStack {
             Form {
                 TextField("Enter city name", text: $cityName)
-                Button("Save") {
-                    viewModel.addCity(name: cityName)
+                    .disabled(viewModel.isAddingCity)
+
+                Button(action: { Task { await viewModel.addCity(name: cityName) } }) {
+                    HStack {
+                        Text("Save")
+                        if viewModel.isAddingCity {
+                            Spacer()
+                            ProgressView()
+                                .scaleEffect(0.9)
+                        }
+                    }
                 }
+                .disabled(viewModel.isAddingCity || cityName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             .navigationTitle("New City")
             .alert("Error", isPresented: $viewModel.showAlert) {

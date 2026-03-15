@@ -7,9 +7,9 @@ protocol CitiesServiceProtocol {
 class MockCitiesService: CitiesServiceProtocol {
     func loadCities() -> [City] {
         return [
-            City(name: "Moscow"),
-            City(name: "London"),
-            City(name: "New York")
+            City(name: "Astana"),
+            City(name: "Berlin"),
+            City(name: "Seoul")
         ]
     }
 }

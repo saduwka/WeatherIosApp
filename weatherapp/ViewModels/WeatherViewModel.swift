@@ -12,6 +12,7 @@ class WeatherViewModel: ObservableObject {
 
     @Published var showAlert = false
     @Published var alertMessage = ""
+    @Published private(set) var isAddingCity = false
 
     let weatherService: WeatherServiceProtocol
     private let citiesService: CitiesServiceProtocol
@@ -22,16 +23,28 @@ class WeatherViewModel: ObservableObject {
         self.cities = citiesService.loadCities()
     }
 
-    func addCity(name: String) {
+    func addCity(name: String) async {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         if trimmedName.isEmpty {
-            alertMessage = "City name cannot be empty"
+            alertMessage = "City name cannot be empty."
             showAlert = true
             return
         }
 
-        let newCity = City(name: trimmedName)
-        cities.append(newCity)
-        isShowingAddCity = false
+        isAddingCity = true
+        defer { isAddingCity = false }
+
+        do {
+            _ = try await weatherService.fetchWeather(for: trimmedName)
+            let newCity = City(name: trimmedName)
+            cities.append(newCity)
+            isShowingAddCity = false
+        } catch let error as WeatherError {
+            alertMessage = error.errorDescription ?? "Something went wrong. Please try again."
+            showAlert = true
+        } catch {
+            alertMessage = WeatherError.unknown.errorDescription ?? "Something went wrong. Please try again."
+            showAlert = true
+        }
     }
 }
