@@ -8,10 +8,14 @@ final class CityDetailViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var errorMessage: String?
 
-    private let weatherService: WeatherServiceProtocol
+    var temperatureUnit: TemperatureUnit { appSettings.temperatureUnit }
 
-    init(weatherService: WeatherServiceProtocol) {
+    private let weatherService: WeatherServiceProtocol
+    private let appSettings: AppSettingsProtocol
+
+    init(weatherService: WeatherServiceProtocol, appSettings: AppSettingsProtocol) {
         self.weatherService = weatherService
+        self.appSettings = appSettings
     }
 
     func loadWeather(for cityName: String) async {
@@ -19,7 +23,8 @@ final class CityDetailViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            weather = try await weatherService.fetchWeather(for: cityName)
+            // единицы температуры из настроек (C или F)
+            weather = try await weatherService.fetchWeather(for: cityName, units: appSettings.temperatureUnit)
         } catch let error as WeatherError {
             errorMessage = error.errorDescription
         } catch {

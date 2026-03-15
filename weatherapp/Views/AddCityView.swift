@@ -11,6 +11,7 @@ struct AddCityView: View {
                 TextField("Enter city name", text: $cityName)
                     .disabled(viewModel.isAddingCity)
 
+                // по нажатию проверяем через API и сохраняем в SwiftData
                 Button(action: { Task { await viewModel.addCity(name: cityName) } }) {
                     HStack {
                         Text("Save")

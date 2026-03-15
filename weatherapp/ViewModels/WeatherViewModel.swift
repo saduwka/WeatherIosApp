@@ -9,18 +9,33 @@ class WeatherViewModel: ObservableObject {
     @Published var cities: [City] = []
     @Published var path: [Route] = []
     @Published var isShowingAddCity = false
-
     @Published var showAlert = false
     @Published var alertMessage = ""
     @Published private(set) var isAddingCity = false
+    @Published var isShowingSettings = false
 
     let weatherService: WeatherServiceProtocol
-    private let citiesService: CitiesServiceProtocol
+    private let citiesStorage: CitiesStorageProtocol
+    var appSettings: AppSettingsProtocol
 
-    init(citiesService: CitiesServiceProtocol, weatherService: WeatherServiceProtocol) {
-        self.citiesService = citiesService
+    init(citiesStorage: CitiesStorageProtocol, weatherService: WeatherServiceProtocol, appSettings: AppSettingsProtocol) {
+        self.citiesStorage = citiesStorage
         self.weatherService = weatherService
-        self.cities = citiesService.loadCities()
+        self.appSettings = appSettings
+        // при старте грузим города из SwiftData
+        loadCitiesFromStorage()
+    }
+
+    private func loadCitiesFromStorage() {
+        do {
+            cities = try citiesStorage.fetchCities()
+        } catch {
+            cities = []
+        }
+    }
+
+    func refreshCities() {
+        loadCitiesFromStorage()
     }
 
     func addCity(name: String) async {
@@ -35,15 +50,35 @@ class WeatherViewModel: ObservableObject {
         defer { isAddingCity = false }
 
         do {
-            _ = try await weatherService.fetchWeather(for: trimmedName)
+            // сначала проверяем что город есть в API
+            _ = try await weatherService.fetchWeather(for: trimmedName, units: appSettings.temperatureUnit)
             let newCity = City(name: trimmedName)
-            cities.append(newCity)
+            try citiesStorage.saveCity(newCity)
+            refreshCities()
             isShowingAddCity = false
         } catch let error as WeatherError {
             alertMessage = error.errorDescription ?? "Something went wrong. Please try again."
             showAlert = true
+        } catch let error as CitiesStorageError {
+            alertMessage = error.errorDescription ?? "Failed to save city."
+            showAlert = true
         } catch {
             alertMessage = WeatherError.unknown.errorDescription ?? "Something went wrong. Please try again."
+            showAlert = true
+        }
+    }
+
+    /// запоминаем какой город открыли (для настройки "открыть при старте")
+    func didOpenCity(_ city: City) {
+        appSettings.lastOpenedCityName = city.name
+    }
+
+    func deleteCity(_ city: City) {
+        do {
+            try citiesStorage.deleteCity(id: city.id)
+            refreshCities()
+        } catch {
+            alertMessage = error.localizedDescription
             showAlert = true
         }
     }

@@ -1,7 +1,6 @@
 import SwiftUI
 
-// MARK: - Weather theme (colors by condition)
-
+// цвета фона и карточек в зависимости от погоды
 private enum WeatherTheme {
     static func gradient(for conditionGroup: String) -> [Color] {
         switch conditionGroup.lowercased() {
@@ -41,9 +40,11 @@ struct CityDetailView: View {
     let city: City
     @StateObject private var detailVM: CityDetailViewModel
 
-    init(city: City, weatherService: WeatherServiceProtocol) {
+    private var unitSymbol: String { detailVM.temperatureUnit == .fahrenheit ? "°F" : "°C" }
+
+    init(city: City, weatherService: WeatherServiceProtocol, appSettings: AppSettingsProtocol) {
         self.city = city
-        _detailVM = StateObject(wrappedValue: CityDetailViewModel(weatherService: weatherService))
+        _detailVM = StateObject(wrappedValue: CityDetailViewModel(weatherService: weatherService, appSettings: appSettings))
     }
 
     var body: some View {
@@ -123,7 +124,7 @@ struct CityDetailView: View {
                         .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
                     }
 
-                    Text("\(Int(weather.temperature))°C")
+                    Text("\(Int(weather.temperature))\(unitSymbol)")
                         .font(.system(size: 68, weight: .thin))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
@@ -144,10 +145,10 @@ struct CityDetailView: View {
 
                 // Detail grid in cards
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    detailCard(title: "Feels like", value: "\(Int(weather.feelsLike))°C", conditionGroup: weather.conditionGroup)
+                    detailCard(title: "Feels like", value: "\(Int(weather.feelsLike))\(unitSymbol)", conditionGroup: weather.conditionGroup)
                     detailCard(title: "Pressure", value: "\(weather.pressure) hPa", conditionGroup: weather.conditionGroup)
-                    detailCard(title: "Min", value: "\(Int(weather.tempMin))°C", conditionGroup: weather.conditionGroup)
-                    detailCard(title: "Max", value: "\(Int(weather.tempMax))°C", conditionGroup: weather.conditionGroup)
+                    detailCard(title: "Min", value: "\(Int(weather.tempMin))\(unitSymbol)", conditionGroup: weather.conditionGroup)
+                    detailCard(title: "Max", value: "\(Int(weather.tempMax))\(unitSymbol)", conditionGroup: weather.conditionGroup)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)

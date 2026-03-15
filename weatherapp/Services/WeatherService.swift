@@ -33,7 +33,7 @@ enum WeatherError: LocalizedError {
 }
 
 protocol WeatherServiceProtocol {
-    func fetchWeather(for city: String) async throws -> Weather
+    func fetchWeather(for city: String, units: TemperatureUnit) async throws -> Weather
 }
 
 final class WeatherServiceImpl: WeatherServiceProtocol {
@@ -47,14 +47,15 @@ final class WeatherServiceImpl: WeatherServiceProtocol {
         self.decoder = JSONDecoder()
     }
 
-    func fetchWeather(for city: String) async throws -> Weather {
-        let url = try buildURL(for: city)
+    func fetchWeather(for city: String, units: TemperatureUnit = .celsius) async throws -> Weather {
+        let url = try buildURL(for: city, units: units)
         let data = try await performRequest(url: url)
         let dto = try decodeResponse(data: data)
         return Weather(from: dto)
     }
 
-    private func buildURL(for city: String) throws -> URL {
+    private func buildURL(for city: String, units: TemperatureUnit = .celsius) throws -> URL {
+        let unitsValue = units == .fahrenheit ? "imperial" : "metric"
         var components = URLComponents()
         components.scheme = "https"
         components.host = "api.openweathermap.org"
@@ -62,7 +63,7 @@ final class WeatherServiceImpl: WeatherServiceProtocol {
         components.queryItems = [
             URLQueryItem(name: "q", value: city),
             URLQueryItem(name: "appid", value: apiKey),
-            URLQueryItem(name: "units", value: "metric"),
+            URLQueryItem(name: "units", value: unitsValue),
             URLQueryItem(name: "lang", value: "en"),
         ]
 
